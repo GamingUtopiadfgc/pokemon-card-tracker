@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.8] - 2026-06-07
+
+### Changed
+- Manual entry lookup flow simplified — type the card name in the Name field, then click **🔍 Look Up Info** (next to Add to Inventory) to cross-reference the TCG API; pick a result and all remaining fields auto-fill; no separate search bar needed
+
+---
+
 ## [1.0.7] - 2026-06-07
 
 ### Added

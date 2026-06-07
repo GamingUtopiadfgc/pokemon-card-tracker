@@ -223,16 +223,6 @@
         <!-- Manual entry panel -->
         <div id="manualPanel" style="display:none">
 
-          <!-- API cross-reference lookup -->
-          <div class="manual-lookup">
-            <label class="manual-lookup-label">Auto-fill from TCG API <span class="label-hint">(optional — type a name to search)</span></label>
-            <div class="manual-lookup-row">
-              <input type="text" id="manualLookupInput" class="form-input" placeholder="e.g. Charizard Base Set — select a result to fill fields below" autocomplete="off">
-              <button id="btnManualLookup" class="btn btn-secondary">Look Up</button>
-            </div>
-            <div id="manualLookupResults" class="manual-lookup-results" style="display:none"></div>
-          </div>
-
           <div class="form-row">
             <div class="form-group" style="flex:2">
               <label>Card Name *</label>
@@ -300,7 +290,9 @@
           </div>
           <div class="form-actions">
             <button id="btnConfirmManual" class="btn btn-primary btn-lg">Add to Inventory</button>
+            <button id="btnManualLookup" class="btn btn-secondary">🔍 Look Up Info</button>
           </div>
+          <div id="manualLookupResults" class="manual-lookup-results" style="display:none"></div>
         </div>
 
       </div>

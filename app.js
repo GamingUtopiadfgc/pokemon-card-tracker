@@ -66,16 +66,9 @@ function setupListeners() {
   // Manual entry form
   document.getElementById('btnConfirmManual').addEventListener('click', confirmAddManual);
   document.getElementById('btnManualLookup').addEventListener('click', () => {
-    const q = document.getElementById('manualLookupInput').value.trim();
+    const q = document.getElementById('manualName').value.trim();
     if (q.length >= 2) lookupManualCard(q);
-  });
-  let manualLookupTimer = null;
-  document.getElementById('manualLookupInput').addEventListener('input', e => {
-    clearTimeout(manualLookupTimer);
-    const q = e.target.value.trim();
-    const resultsDiv = document.getElementById('manualLookupResults');
-    if (q.length < 2) { resultsDiv.style.display = 'none'; return; }
-    manualLookupTimer = setTimeout(() => lookupManualCard(q), 420);
+    else toast('Enter a card name first, then click Look Up Info.');
   });
 
   // Modal close buttons
@@ -743,7 +736,6 @@ function fillManualFromCard(card) {
   document.getElementById('manualImageUrl').value = card.images?.small || '';
 
   document.getElementById('manualLookupResults').style.display = 'none';
-  document.getElementById('manualLookupInput').value = '';
 }
 
 // =========================================================
@@ -769,7 +761,6 @@ function resetManualForm() {
   document.getElementById('manualQuantity').value   = '1';
   document.getElementById('manualCondition').value  = 'NM';
   document.getElementById('manualPrice').value      = '';
-  document.getElementById('manualLookupInput').value = '';
   document.getElementById('manualLookupResults').style.display = 'none';
 }
 

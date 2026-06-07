@@ -663,17 +663,6 @@ img[src=""], img:not([src]) { background: var(--bg-primary); }
 .update-status.error   { color: var(--accent-red); }
 
 /* ===== MANUAL ENTRY — API LOOKUP ===== */
-.manual-lookup { margin-bottom: 18px; }
-.manual-lookup-label {
-  display: block;
-  font-size: 11px;
-  color: var(--text-secondary);
-  margin-bottom: 6px;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-.manual-lookup-row { display: flex; gap: 8px; }
-.manual-lookup-row .form-input { flex: 1; margin: 0; }
 .manual-lookup-results {
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
