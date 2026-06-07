@@ -1,0 +1,45 @@
+{
+  "name": "poke-card-inventory-tracker",
+  "version": "1.0.7",
+  "description": "Pokémon Card Inventory Tracker built with Electron",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder --win",
+    "build:dir": "electron-builder --win --dir"
+  },
+  "build": {
+    "appId": "com.gamingtopia.poke-card-inventory-tracker",
+    "productName": "Pokemon Card Tracker",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "**/*",
+      "!node_modules/.cache/**",
+      "!dist/**"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "deleteAppDataOnUninstall": false,
+      "include": "build/installer.nsh"
+    }
+  },
+  "devDependencies": {
+    "electron": "^28.1.0",
+    "electron-builder": "^24.9.1"
+  },
+  "keywords": ["pokemon", "cards", "inventory", "tracker"],
+  "license": "MIT"
+}

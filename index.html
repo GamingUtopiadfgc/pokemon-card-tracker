@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy"
+    content="default-src 'self';
+             img-src 'self' https://images.pokemontcg.io data: blob:;
+             script-src 'self';
+             style-src 'self' 'unsafe-inline';
+             connect-src https://api.pokemontcg.io;">
+  <title>Pokémon Card Inventory Tracker</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ===== HEADER ===== -->
+  <header class="header">
+    <div class="header-brand">
+      <span class="header-logo">🎴</span>
+      <h1>Pokémon Card Tracker</h1>
+    </div>
+    <div class="header-search">
+      <input type="text" id="globalSearch" placeholder="Search your inventory by name or set…" autocomplete="off">
+    </div>
+    <div class="header-actions">
+      <button id="btnAddCard"  class="btn btn-primary">+ Add Card</button>
+      <button id="btnExport"   class="btn btn-secondary">⬇ Export CSV</button>
+      <button id="btnImport"   class="btn btn-secondary">⬆ Import JSON</button>
+      <button id="btnBackups"   class="btn btn-secondary">🗄 Backups</button>
+      <button id="btnSettings"  class="btn btn-secondary">⚙ Settings</button>
+    </div>
+  </header>
+
+  <!-- ===== MAIN LAYOUT ===== -->
+  <div class="main-layout">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+
+      <div class="sidebar-section">
+        <h3>Collection Stats</h3>
+        <div class="stat-grid">
+          <div class="stat-item">
+            <span class="stat-value" id="statTotal">0</span>
+            <span class="stat-label">Total Cards</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-value" id="statUnique">0</span>
+            <span class="stat-label">Unique</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-value" id="statSets">0</span>
+            <span class="stat-label">Sets</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-value" id="statValue">$0</span>
+            <span class="stat-label">Est. Value</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <h3>Filters</h3>
+
+        <div class="filter-group">
+          <label>Set</label>
+          <select id="filterSet" class="select-input">
+            <option value="">All Sets</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label>Type</label>
+          <select id="filterType" class="select-input">
+            <option value="">All Types</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label>Condition</label>
+          <div class="checkbox-group" id="filterCondition"></div>
+        </div>
+
+        <div class="filter-group">
+          <label>Rarity</label>
+          <div class="checkbox-group" id="filterRarity"></div>
+        </div>
+
+        <div class="filter-group">
+          <label>Supertype</label>
+          <div class="checkbox-group" id="filterSupertype">
+            <label class="checkbox-item"><input type="checkbox" value="Pokémon"> Pokémon</label>
+            <label class="checkbox-item"><input type="checkbox" value="Trainer"> Trainer</label>
+            <label class="checkbox-item"><input type="checkbox" value="Energy"> Energy</label>
+          </div>
+        </div>
+
+        <div class="filter-group">
+          <label>Price Range</label>
+          <div class="filter-range">
+            <input type="number" id="filterPriceMin" class="filter-input-sm" placeholder="Min $" min="0" step="0.01">
+            <span class="filter-range-sep">–</span>
+            <input type="number" id="filterPriceMax" class="filter-input-sm" placeholder="Max $" min="0" step="0.01">
+          </div>
+        </div>
+
+        <div class="filter-group">
+          <label>Date Added</label>
+          <select id="filterDateAdded" class="select-input">
+            <option value="">All Time</option>
+            <option value="7">Last 7 Days</option>
+            <option value="30">Last 30 Days</option>
+            <option value="90">Last 90 Days</option>
+            <option value="365">This Year</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label>Min Quantity</label>
+          <input type="number" id="filterQtyMin" class="filter-input-sm" placeholder="e.g. 2" min="1" step="1" style="width:100%">
+        </div>
+
+        <button id="btnClearFilters" class="btn btn-ghost btn-sm" style="width:100%;margin-top:4px">Clear Filters</button>
+      </div>
+
+    </aside>
+
+    <!-- Content -->
+    <main class="content">
+      <div class="content-toolbar">
+        <div class="view-toggle">
+          <button id="viewGrid" class="view-btn active" title="Grid View">⊞</button>
+          <button id="viewList" class="view-btn"        title="List View">☰</button>
+        </div>
+        <div class="sort-control">
+          <label>Sort:</label>
+          <select id="sortBy" class="select-input select-sm">
+            <option value="name-asc">Name (A–Z)</option>
+            <option value="name-desc">Name (Z–A)</option>
+            <option value="set-asc">Set (A–Z)</option>
+            <option value="value-desc">Value (High)</option>
+            <option value="value-asc">Value (Low)</option>
+            <option value="added-desc">Recently Added</option>
+            <option value="quantity-desc">Quantity (High)</option>
+          </select>
+        </div>
+        <span class="results-count" id="resultsCount">0 cards</span>
+      </div>
+
+      <div id="cardGrid" class="card-grid"></div>
+
+      <div id="emptyState" class="empty-state" style="display:none">
+        <div class="empty-icon">🎴</div>
+        <h2>Your collection is empty</h2>
+        <p>Click <strong>+ Add Card</strong> to start tracking your Pokémon cards.</p>
+      </div>
+    </main>
+  </div>
+
+  <!-- ===== ADD CARD MODAL ===== -->
+  <div id="addCardModal" class="modal-overlay" style="display:none">
+    <div class="modal modal-lg">
+      <div class="modal-header">
+        <h2>Add Card to Inventory</h2>
+        <button class="modal-close" data-close="addCardModal">×</button>
+      </div>
+
+      <!-- Tab switcher -->
+      <div class="modal-tabs">
+        <button class="modal-tab active" id="tabSearch">🔍 Search TCG API</button>
+        <button class="modal-tab" id="tabManual">✏️ Enter Manually</button>
+      </div>
+
+      <div class="modal-body">
+
+        <!-- Search panel -->
+        <div id="searchPanel">
+          <div class="search-section">
+            <input type="text" id="cardSearchInput" placeholder="Search for a card… (e.g. Charizard, Pikachu, Mewtwo)" autocomplete="off">
+            <div id="searchStatus" class="search-status"></div>
+          </div>
+          <div id="searchResults" class="search-results"></div>
+        </div>
+
+        <!-- Selected card form -->
+        <div id="selectedCardPanel" class="selected-card-panel" style="display:none">
+          <div class="selected-card-preview">
+            <img id="selectedCardImg" src="" alt="Card preview">
+          </div>
+          <div class="selected-card-form">
+            <h3 id="selectedCardName"></h3>
+            <p id="selectedCardSetInfo" class="card-set-info"></p>
+            <p id="selectedCardPrice" class="card-market-price"></p>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Quantity</label>
+                <input type="number" id="cardQuantity" value="1" min="1" max="999" class="form-input">
+              </div>
+              <div class="form-group">
+                <label>Condition</label>
+                <select id="cardCondition" class="form-input">
+                  <option value="M">Mint (M)</option>
+                  <option value="NM" selected>Near Mint (NM)</option>
+                  <option value="LP">Lightly Played (LP)</option>
+                  <option value="MP">Moderately Played (MP)</option>
+                  <option value="HP">Heavily Played (HP)</option>
+                  <option value="D">Damaged (D)</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Notes</label>
+              <textarea id="cardNotes" placeholder="Optional notes (foil variant, signed, etc.)" class="form-input" rows="2"></textarea>
+            </div>
+            <div class="form-actions">
+              <button id="btnConfirmAdd" class="btn btn-primary btn-lg">Add to Inventory</button>
+              <button id="btnCancelSelect" class="btn btn-ghost">← Back to Search</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Manual entry panel -->
+        <div id="manualPanel" style="display:none">
+
+          <!-- API cross-reference lookup -->
+          <div class="manual-lookup">
+            <label class="manual-lookup-label">Auto-fill from TCG API <span class="label-hint">(optional — type a name to search)</span></label>
+            <div class="manual-lookup-row">
+              <input type="text" id="manualLookupInput" class="form-input" placeholder="e.g. Charizard Base Set — select a result to fill fields below" autocomplete="off">
+              <button id="btnManualLookup" class="btn btn-secondary">Look Up</button>
+            </div>
+            <div id="manualLookupResults" class="manual-lookup-results" style="display:none"></div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group" style="flex:2">
+              <label>Card Name *</label>
+              <input type="text" id="manualName" class="form-input" placeholder="e.g. Charizard">
+            </div>
+            <div class="form-group">
+              <label>Supertype</label>
+              <select id="manualSupertype" class="form-input">
+                <option value="Pokémon">Pokémon</option>
+                <option value="Trainer">Trainer</option>
+                <option value="Energy">Energy</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group" style="flex:2">
+              <label>Set Name</label>
+              <input type="text" id="manualSet" class="form-input" placeholder="e.g. Base Set">
+            </div>
+            <div class="form-group">
+              <label>Card Number</label>
+              <input type="text" id="manualNumber" class="form-input" placeholder="e.g. 4/102">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Rarity</label>
+              <input type="text" id="manualRarity" class="form-input" placeholder="e.g. Rare Holo">
+            </div>
+            <div class="form-group">
+              <label>Types <span class="label-hint">(comma-separated)</span></label>
+              <input type="text" id="manualTypes" class="form-input" placeholder="e.g. Fire, Flying">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Market Price ($)</label>
+              <input type="number" id="manualPrice" class="form-input" placeholder="0.00" min="0" step="0.01">
+            </div>
+            <div class="form-group">
+              <label>Image URL <span class="label-hint">(optional)</span></label>
+              <input type="text" id="manualImageUrl" class="form-input" placeholder="https://images.pokemontcg.io/…">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Quantity</label>
+              <input type="number" id="manualQuantity" class="form-input" value="1" min="1" max="999">
+            </div>
+            <div class="form-group">
+              <label>Condition</label>
+              <select id="manualCondition" class="form-input">
+                <option value="M">Mint (M)</option>
+                <option value="NM" selected>Near Mint (NM)</option>
+                <option value="LP">Lightly Played (LP)</option>
+                <option value="MP">Moderately Played (MP)</option>
+                <option value="HP">Heavily Played (HP)</option>
+                <option value="D">Damaged (D)</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Notes</label>
+            <textarea id="manualNotes" class="form-input" rows="2" placeholder="Optional notes (foil, signed, error card, etc.)"></textarea>
+          </div>
+          <div class="form-actions">
+            <button id="btnConfirmManual" class="btn btn-primary btn-lg">Add to Inventory</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== CARD DETAIL MODAL ===== -->
+  <div id="cardDetailModal" class="modal-overlay" style="display:none">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="detailCardName">Card Detail</h2>
+        <button class="modal-close" data-close="cardDetailModal">×</button>
+      </div>
+      <div class="modal-body modal-detail-body">
+        <div class="detail-image">
+          <img id="detailCardImg" src="" alt="Card">
+        </div>
+        <div class="detail-info">
+          <div class="detail-meta">
+            <div class="meta-row"><span class="meta-label">Set</span><span id="detailSet"></span></div>
+            <div class="meta-row"><span class="meta-label">Number</span><span id="detailNumber"></span></div>
+            <div class="meta-row"><span class="meta-label">Rarity</span><span id="detailRarity"></span></div>
+            <div class="meta-row"><span class="meta-label">Type(s)</span><span id="detailTypes"></span></div>
+            <div class="meta-row">
+              <span class="meta-label">Market Price</span>
+              <span id="detailPrice" class="price-tag"></span>
+              <button id="btnRefreshPrice" class="btn btn-ghost btn-sm" style="margin-left:8px">↻ Refresh</button>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Quantity</label>
+              <input type="number" id="detailQuantity" min="1" max="999" class="form-input">
+            </div>
+            <div class="form-group">
+              <label>Condition</label>
+              <select id="detailCondition" class="form-input">
+                <option value="M">Mint (M)</option>
+                <option value="NM">Near Mint (NM)</option>
+                <option value="LP">Lightly Played (LP)</option>
+                <option value="MP">Moderately Played (MP)</option>
+                <option value="HP">Heavily Played (HP)</option>
+                <option value="D">Damaged (D)</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Notes</label>
+            <textarea id="detailNotes" class="form-input" rows="3"></textarea>
+          </div>
+          <div class="detail-actions">
+            <button id="btnSaveDetail"  class="btn btn-primary">Save Changes</button>
+            <button id="btnDeleteCard"  class="btn btn-danger">Remove Card</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== SETTINGS MODAL ===== -->
+  <div id="settingsModal" class="modal-overlay" style="display:none">
+    <div class="modal modal-settings">
+      <div class="modal-header">
+        <h2>⚙ Settings</h2>
+        <button class="modal-close" data-close="settingsModal">×</button>
+      </div>
+      <div class="modal-body">
+
+        <div class="settings-section">
+          <h3 class="settings-heading">About</h3>
+          <div class="settings-row">
+            <span class="settings-label">App version</span>
+            <span id="settingsVersion" class="settings-value">—</span>
+          </div>
+          <div class="settings-row settings-row-col">
+            <div class="settings-row-top">
+              <span class="settings-label">Updates</span>
+              <button id="btnCheckUpdates" class="btn btn-secondary btn-sm">Check for Updates</button>
+            </div>
+            <div id="updateStatus" class="update-status"></div>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <h3 class="settings-heading">Data</h3>
+          <div class="settings-row">
+            <span class="settings-label">Inventory &amp; backups folder</span>
+            <button id="btnOpenDataFolder" class="btn btn-ghost btn-sm">📂 Open Folder</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== BACKUP MODAL ===== -->
+  <div id="backupModal" class="modal-overlay" style="display:none">
+    <div class="modal modal-backup">
+      <div class="modal-header">
+        <h2>🗄 Backup Manager</h2>
+        <button class="modal-close" data-close="backupModal">×</button>
+      </div>
+      <div class="modal-body">
+
+        <div class="backup-toolbar">
+          <button id="btnCreateBackup" class="btn btn-primary">+ Create Backup Now</button>
+          <button id="btnOpenBackupFolder" class="btn btn-ghost btn-sm">📂 Open Backup Folder</button>
+          <span class="backup-info">Auto-backup runs once per day on launch. Last 20 backups kept.</span>
+        </div>
+
+        <div id="backupList" class="backup-list">
+          <div class="backup-loading">Loading backups…</div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
