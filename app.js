@@ -255,17 +255,50 @@ function setupListeners() {
 // =========================================================
 //  POKEMON TCG API
 // =========================================================
+// Parse "Ponyta SCR" or "Ponyta Stellar Crown" into { cardName, setFilter }
+// so searches can be narrowed to a specific set directly.
+function parseSearchQuery(raw) {
+  const q = raw.trim();
+
+  for (const setLabel of TCG_SETS) {
+    const codeM = setLabel.match(/\(([A-Z0-9]+)\)$/);
+    const nameM = setLabel.match(/(?:^[^:]+:\s*)?(.+?)\s*\([^)]+\)$/);
+    const code  = codeM?.[1] ?? '';
+    const name  = nameM?.[1]?.trim() ?? '';
+
+    // Code match — must appear as a standalone word (e.g. "SCR" in "Ponyta SCR")
+    if (code.length >= 2) {
+      const rx = new RegExp(`(?:^|\\s)${code}(?:\\s|$)`, 'i');
+      if (rx.test(q)) {
+        const cardName = q.replace(new RegExp(`\\b${code}\\b`, 'gi'), '').trim();
+        return { cardName: cardName || q, setFilter: `set.ptcgoCode:${code}` };
+      }
+    }
+
+    // Set name match — must be at least 5 chars to avoid false positives
+    if (name.length >= 5 && q.toLowerCase().includes(name.toLowerCase())) {
+      const cardName = q.replace(new RegExp(name, 'gi'), '').trim();
+      return { cardName: cardName || q, setFilter: `set.name:"${name}"` };
+    }
+  }
+
+  return { cardName: q, setFilter: '' };
+}
+
 async function fetchCards(query) {
   const status     = document.getElementById('searchStatus');
   const resultsDiv = document.getElementById('searchResults');
   try {
-    const encoded = encodeURIComponent(query);
-    const url     = `https://api.pokemontcg.io/v2/cards?q=name:${encoded}*&pageSize=24&select=id,name,set,number,rarity,supertype,types,images,tcgplayer&orderBy=name`;
+    const { cardName, setFilter } = parseSearchQuery(query);
+    const qParam  = setFilter ? `name:${cardName}* ${setFilter}` : `name:${cardName}*`;
+    const url     = `https://api.pokemontcg.io/v2/cards?q=${encodeURIComponent(qParam)}&pageSize=60&select=id,name,set,number,rarity,supertype,types,images,tcgplayer&orderBy=-set.releaseDate,name`;
     const resp    = await fetch(url);
     if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
     const { data: cards = [] } = await resp.json();
 
-    status.textContent = cards.length ? `${cards.length} result${cards.length > 1 ? 's' : ''} found` : 'No cards found — try a different name.';
+    status.textContent = cards.length
+      ? `${cards.length} result${cards.length > 1 ? 's' : ''} found${setFilter ? ' (set filtered)' : ''}`
+      : 'No cards found — try a different name or add a set code like "Ponyta SCR".';
     renderSearchResults(cards);
   } catch (err) {
     status.textContent = 'Search failed. Check your internet connection.';
@@ -872,11 +905,16 @@ async function lookupManualCard(query) {
   resultsDiv.style.display = 'block';
   resultsDiv.innerHTML = '<div class="manual-lookup-status">Searching…</div>';
   try {
-    const encoded = encodeURIComponent(query);
-    const url = `https://api.pokemontcg.io/v2/cards?q=name:${encoded}*&pageSize=20&select=id,name,set,number,rarity,supertype,types,images,tcgplayer&orderBy=name`;
+    const { cardName, setFilter } = parseSearchQuery(query);
+    const qParam = setFilter ? `name:${cardName}* ${setFilter}` : `name:${cardName}*`;
+    const url = `https://api.pokemontcg.io/v2/cards?q=${encodeURIComponent(qParam)}&pageSize=60&select=id,name,set,number,rarity,supertype,types,images,tcgplayer&orderBy=-set.releaseDate,name`;
     const resp = await fetch(url);
     if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
     const { data: cards = [] } = await resp.json();
+    if (!cards.length) {
+      resultsDiv.innerHTML = '<div class="manual-lookup-status">No cards found — try adding a set code, e.g. "Ponyta SCR".</div>';
+      return;
+    }
     renderManualLookupResults(cards);
   } catch {
     resultsDiv.innerHTML = '<div class="manual-lookup-status">Search failed — check your internet connection.</div>';

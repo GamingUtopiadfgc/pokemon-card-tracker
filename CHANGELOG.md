@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.2] - 2026-06-07
+
+### Fixed
+- Cards from large sets (e.g. Ponyta in Stellar Crown) are now findable — result limit raised from 24 to 60 and results are ordered newest-set-first so modern cards surface immediately
+- Search now accepts a set code or set name after the card name (e.g. "Ponyta SCR" or "Ponyta Stellar Crown") to narrow results directly to that set — works in both the Search tab and the Look Up Info button in manual entry
+
+---
+
 ## [1.1.1] - 2026-06-07
 
 ### Changed
