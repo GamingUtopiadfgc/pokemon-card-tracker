@@ -4,6 +4,146 @@
 
 const FALLBACK_IMG = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 140'%3E%3Crect fill='%230f3460' width='100' height='140'/%3E%3Ctext x='50' y='75' text-anchor='middle' fill='%23606080' font-size='11' font-family='sans-serif'%3ENo Image%3C/text%3E%3C/svg%3E";
 
+// ===== All TCG Sets (newest first) =====
+const TCG_SETS = [
+  // Scarlet & Violet
+  'SV09: Journey Together (JTG)',
+  'SV08: Surging Sparks (SSP)',
+  'SV07.5: Prismatic Evolutions (PRE)',
+  'SV07: Stellar Crown (SCR)',
+  'SV06.5: Shrouded Fable (SFA)',
+  'SV06: Twilight Masquerade (TWM)',
+  'SV05: Temporal Forces (TEF)',
+  'SV04.5: Paldean Fates (PAF)',
+  'SV04: Paradox Rift (PAR)',
+  'SV3.5: 151 (MEW)',
+  'SV03: Obsidian Flames (OBF)',
+  'SV02: Paldea Evolved (PAL)',
+  'SV01: Scarlet & Violet (SVI)',
+  'SVP: Scarlet & Violet Black Star Promos (SVP)',
+  // Sword & Shield
+  'SWSH12.5: Crown Zenith (CRZ)',
+  'SWSH12: Silver Tempest (SIT)',
+  'SWSH11: Lost Origin (LOR)',
+  'SWSH10.5: Pokémon GO (PGO)',
+  'SWSH10: Astral Radiance (ASR)',
+  'SWSH09: Brilliant Stars (BRS)',
+  'SWSH08: Fusion Strike (FST)',
+  'SWSH07.5: Celebrations (CEL)',
+  'SWSH07: Evolving Skies (EVS)',
+  'SWSH06: Chilling Reign (CRE)',
+  'SWSH05: Battle Styles (BST)',
+  'SWSH04.5: Shining Fates (SHF)',
+  'SWSH04: Vivid Voltage (VIV)',
+  "SWSH03.5: Champion's Path (CPA)",
+  'SWSH03: Darkness Ablaze (DAA)',
+  'SWSH02: Rebel Clash (RCL)',
+  'SWSH01: Sword & Shield (SSH)',
+  'SWSHP: Sword & Shield Black Star Promos (SWSH)',
+  // Sun & Moon
+  'SM12: Cosmic Eclipse (CEC)',
+  'SM11.5: Hidden Fates (HIF)',
+  'SM11: Unified Minds (UNM)',
+  'SM10: Unbroken Bonds (UNB)',
+  'SM09: Team Up (TEU)',
+  'SM08: Lost Thunder (LOT)',
+  'SM07.5: Dragon Majesty (DRM)',
+  'SM07: Celestial Storm (CES)',
+  'SM06: Forbidden Light (FLI)',
+  'SM05: Ultra Prism (UPR)',
+  'SM04: Crimson Invasion (CIN)',
+  'SM03.5: Shining Legends (SLG)',
+  'SM03: Burning Shadows (BUS)',
+  'SM02: Guardians Rising (GRI)',
+  'SM01: Sun & Moon (SUM)',
+  'SMP: Sun & Moon Black Star Promos (SM)',
+  // XY
+  'XY12: Evolutions (EVO)',
+  'XY11: Steam Siege (STS)',
+  'XY10: Fates Collide (FCO)',
+  'XY09: BREAKpoint (BKP)',
+  'XY08: BREAKthrough (BKT)',
+  'XY07: Ancient Origins (AOR)',
+  'XY06: Roaring Skies (ROS)',
+  'XY05: Primal Clash (PRC)',
+  'XY04: Phantom Forces (PHF)',
+  'XY03: Furious Fists (FFI)',
+  'XY02: Flashfire (FLF)',
+  'XY01: XY (XY)',
+  'XY: Generations (GEN)',
+  'XY: Double Crisis (DC)',
+  'XYP: XY Black Star Promos (XYP)',
+  // Black & White
+  'BW11: Legendary Treasures (LTR)',
+  'BW10: Plasma Blast (PLB)',
+  'BW09: Plasma Freeze (PLF)',
+  'BW08: Plasma Storm (PLS)',
+  'BW07: Boundaries Crossed (BCR)',
+  'BW06: Dragons Exalted (DRX)',
+  'BW05: Dark Explorers (DEX)',
+  'BW04: Next Destinies (NXD)',
+  'BW03: Noble Victories (NVI)',
+  'BW02: Emerging Powers (EPO)',
+  'BW01: Black & White (BLW)',
+  'BWP: Black & White Black Star Promos (BWP)',
+  'BW: Dragon Vault (DRV)',
+  // HeartGold & SoulSilver
+  'HGSS: Call of Legends (CL)',
+  'HGSS04: HS Triumphant (TM)',
+  'HGSS03: HS Undaunted (UD)',
+  'HGSS02: HS Unleashed (UL)',
+  'HGSS01: HeartGold & SoulSilver (HS)',
+  // Platinum
+  'PL04: Arceus (AR)',
+  'PL03: Supreme Victors (SV2)',
+  'PL02: Rising Rivals (RR)',
+  'PL01: Platinum (PL)',
+  // Diamond & Pearl
+  'DP07: Stormfront (SF)',
+  'DP06: Legends Awakened (LA)',
+  'DP05: Majestic Dawn (MD)',
+  'DP04: Great Encounters (GE)',
+  'DP03: Secret Wonders (SW)',
+  'DP02: Mysterious Treasures (MT)',
+  'DP01: Diamond & Pearl (DP)',
+  // EX Series
+  'EX16: Power Keepers (PK)',
+  'EX15: Dragon Frontiers (DF)',
+  'EX14: Crystal Guardians (CG)',
+  'EX13: Holon Phantoms (HP)',
+  'EX12: Legend Maker (LM)',
+  'EX11: Delta Species (DS)',
+  'EX10: Unseen Forces (UF)',
+  'EX09: Emerald (EM)',
+  'EX08: Deoxys (DX)',
+  'EX07: Team Rocket Returns (TRR)',
+  'EX06: FireRed & LeafGreen (FRLG)',
+  'EX05: Hidden Legends (HL)',
+  'EX04: Team Magma vs Team Aqua (MA)',
+  'EX03: Dragon (DR)',
+  'EX02: Sandstorm (SS)',
+  'EX01: Ruby & Sapphire (RS)',
+  // e-Card
+  'Skyridge (SK)',
+  'Aquapolis (AQ)',
+  'Expedition Base Set (EXP)',
+  // Neo
+  'Neo Destiny (N4)',
+  'Neo Revelation (N3)',
+  'Neo Discovery (N2)',
+  'Neo Genesis (N1)',
+  // Original
+  'Gym Challenge (G2)',
+  'Gym Heroes (G1)',
+  'Team Rocket (TR)',
+  'Fossil (FO)',
+  'Jungle (JU)',
+  'Base Set 2 (B2)',
+  'Base Set (BS)',
+  // Promos
+  'WotC Black Star Promos (WP)',
+];
+
 const CONDITIONS = {
   M:  'Mint',
   NM: 'Near Mint',
@@ -66,6 +206,7 @@ function setupListeners() {
 
   // Manual entry form
   document.getElementById('btnConfirmManual').addEventListener('click', confirmAddManual);
+  initSetPicker();
   document.getElementById('btnManualLookup').addEventListener('click', () => {
     const q = document.getElementById('manualName').value.trim();
     if (q.length >= 2) lookupManualCard(q);
@@ -789,6 +930,73 @@ function fillManualFromCard(card) {
 }
 
 // =========================================================
+//  SET PICKER
+// =========================================================
+function initSetPicker() {
+  const input    = document.getElementById('manualSet');
+  const dropdown = document.getElementById('setDropdown');
+  let focusedIdx = -1;
+
+  function renderOptions(query) {
+    const q = query.toLowerCase().trim();
+    const matches = q.length === 0
+      ? TCG_SETS.slice(0, 60)
+      : TCG_SETS.filter(s => s.toLowerCase().includes(q)).slice(0, 80);
+
+    if (!matches.length) { dropdown.style.display = 'none'; return; }
+
+    dropdown.innerHTML = '';
+    focusedIdx = -1;
+    matches.forEach(set => {
+      const div = document.createElement('div');
+      div.className   = 'set-option';
+      div.textContent = set;
+      div.addEventListener('mousedown', e => { e.preventDefault(); pickSet(set); });
+      dropdown.appendChild(div);
+    });
+    dropdown.style.display = 'block';
+  }
+
+  function pickSet(label) {
+    // "SV07: Stellar Crown (SCR)" → "Stellar Crown"
+    // "Base Set (BS)" → "Base Set"
+    const m = label.match(/^[^:]+:\s*(.+?)\s*\([^)]+\)$/) ||
+              label.match(/^(.+?)\s*\([^)]+\)$/);
+    input.value = m ? m[1].trim() : label;
+    dropdown.style.display = 'none';
+    focusedIdx = -1;
+  }
+
+  function updateFocus(opts) {
+    opts.forEach((o, i) => o.classList.toggle('focused', i === focusedIdx));
+    if (focusedIdx >= 0) opts[focusedIdx].scrollIntoView({ block: 'nearest' });
+  }
+
+  input.addEventListener('input',  () => renderOptions(input.value));
+  input.addEventListener('focus',  () => renderOptions(input.value));
+  input.addEventListener('blur',   () => setTimeout(() => { dropdown.style.display = 'none'; }, 160));
+
+  input.addEventListener('keydown', e => {
+    const opts = [...dropdown.querySelectorAll('.set-option')];
+    if (!opts.length || dropdown.style.display === 'none') return;
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      focusedIdx = Math.min(focusedIdx + 1, opts.length - 1);
+      updateFocus(opts);
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      focusedIdx = Math.max(focusedIdx - 1, 0);
+      updateFocus(opts);
+    } else if (e.key === 'Enter' && focusedIdx >= 0) {
+      e.preventDefault();
+      pickSet(opts[focusedIdx].textContent);
+    } else if (e.key === 'Escape') {
+      dropdown.style.display = 'none';
+    }
+  });
+}
+
+// =========================================================
 //  MODAL TAB SWITCHING
 // =========================================================
 function switchTab(tab) {
@@ -812,6 +1020,7 @@ function resetManualForm() {
   document.getElementById('manualCondition').value  = 'NM';
   document.getElementById('manualPrice').value      = '';
   document.getElementById('manualLookupResults').style.display = 'none';
+  document.getElementById('setDropdown').style.display         = 'none';
 }
 
 async function confirmAddManual() {

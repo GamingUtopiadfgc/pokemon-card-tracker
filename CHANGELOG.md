@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0] - 2026-06-07
+
+### Added
+- **Searchable set picker in manual entry** — the Set Name field now has a live dropdown of all 130+ official TCG sets (Base Set through the latest Scarlet & Violet sets) in the format "SV07: Stellar Crown (SCR)"; type any part of the name, series code, or abbreviation to filter; use arrow keys to navigate and Enter to select; clicking a set fills in just the clean name
+
+---
+
 ## [1.0.9] - 2026-06-07
 
 ### Added

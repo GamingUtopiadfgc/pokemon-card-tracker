@@ -662,6 +662,39 @@ img[src=""], img:not([src]) { background: var(--bg-primary); }
 .update-status.new     { color: var(--accent-yellow); }
 .update-status.error   { color: var(--accent-red); }
 
+/* ===== SET PICKER DROPDOWN ===== */
+.set-picker-wrap { position: relative; }
+.set-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-top: none;
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+  max-height: 210px;
+  overflow-y: auto;
+  z-index: 60;
+  box-shadow: 0 8px 20px var(--shadow);
+}
+.set-option {
+  padding: 7px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: background 0.1s;
+}
+.set-option:last-child { border-bottom: none; }
+.set-option:hover, .set-option.focused {
+  background: var(--bg-card);
+  color: var(--text-primary);
+}
+
 /* ===== MANUAL ENTRY — API LOOKUP ===== */
 .manual-lookup-results {
   border: 1px solid var(--border);
