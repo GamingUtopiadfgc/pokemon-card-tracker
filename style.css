@@ -700,15 +700,15 @@ img[src=""], img:not([src]) { background: var(--bg-primary); }
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   background: var(--bg-primary);
-  max-height: 240px;
+  max-height: 420px;
   overflow-y: auto;
-  margin-top: 6px;
+  margin-top: 8px;
 }
 .manual-lookup-item {
   display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 10px;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 12px 14px;
   cursor: pointer;
   border-bottom: 1px solid var(--border);
   transition: background 0.12s;
@@ -716,14 +716,15 @@ img[src=""], img:not([src]) { background: var(--bg-primary); }
 .manual-lookup-item:last-child { border-bottom: none; }
 .manual-lookup-item:hover { background: var(--bg-card); }
 .manual-lookup-item img {
-  width: 32px;
-  height: 44px;
+  width: 66px;
+  height: 92px;
   object-fit: cover;
-  border-radius: 3px;
+  border-radius: 5px;
   flex-shrink: 0;
   background: var(--bg-secondary);
+  box-shadow: 0 2px 8px var(--shadow);
 }
-.manual-lookup-info { overflow: hidden; flex: 1; }
-.manual-lookup-name { font-size: 12px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.manual-lookup-meta { font-size: 10px; color: var(--text-muted); margin-top: 1px; }
-.manual-lookup-status { font-size: 11px; color: var(--text-muted); padding: 12px; text-align: center; }
+.manual-lookup-info { overflow: hidden; flex: 1; padding-top: 4px; }
+.manual-lookup-name { font-size: 14px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.manual-lookup-meta { font-size: 12px; color: var(--text-muted); margin-top: 5px; line-height: 1.5; }
+.manual-lookup-status { font-size: 12px; color: var(--text-muted); padding: 16px; text-align: center; }

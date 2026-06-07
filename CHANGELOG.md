@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.1] - 2026-06-07
+
+### Changed
+- Look Up Info results are now much larger and easier to read — card images increased from 32×44 px to 66×92 px, card name font bumped to 14px bold, set/number/rarity details to 12px, and row padding increased for comfortable clicking
+
+---
+
 ## [1.1.0] - 2026-06-07
 
 ### Added

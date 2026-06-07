@@ -1,6 +1,6 @@
 {
   "name": "poke-card-inventory-tracker",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Pokémon Card Inventory Tracker built with Electron",
   "main": "main.js",
   "scripts": {
