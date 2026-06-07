@@ -38,6 +38,7 @@ function setupListeners() {
   document.getElementById('btnBackups').addEventListener('click', openBackupModal);
   document.getElementById('btnSettings').addEventListener('click', openSettingsModal);
   document.getElementById('btnCheckUpdates').addEventListener('click', checkForUpdates);
+  document.getElementById('btnDownloadUpdate').addEventListener('click', downloadAndInstallUpdate);
   document.getElementById('btnOpenDataFolder').addEventListener('click', () => window.electronAPI.openDataFolder());
   document.getElementById('btnCreateBackup').addEventListener('click', createBackupNow);
   document.getElementById('btnOpenBackupFolder').addEventListener('click', () => window.electronAPI.backupOpenFolder());
@@ -630,21 +631,29 @@ async function deleteBackup(filename) {
 // =========================================================
 //  SETTINGS
 // =========================================================
+let pendingUpdateUrl = '';
+
 async function openSettingsModal() {
   document.getElementById('settingsModal').style.display = 'flex';
   const ver = await window.electronAPI.getAppVersion();
   document.getElementById('settingsVersion').textContent = `v${ver}`;
   document.getElementById('updateStatus').textContent    = '';
   document.getElementById('updateStatus').className      = 'update-status';
+  document.getElementById('updateAction').style.display  = 'none';
+  pendingUpdateUrl = '';
 }
 
 async function checkForUpdates() {
-  const btn    = document.getElementById('btnCheckUpdates');
-  const status = document.getElementById('updateStatus');
+  const btn        = document.getElementById('btnCheckUpdates');
+  const status     = document.getElementById('updateStatus');
+  const actionDiv  = document.getElementById('updateAction');
+
   btn.disabled    = true;
   btn.textContent = 'Checking…';
-  status.className      = 'update-status';
-  status.textContent    = '';
+  status.className = 'update-status';
+  status.textContent = '';
+  actionDiv.style.display = 'none';
+  pendingUpdateUrl = '';
 
   const result = await window.electronAPI.checkForUpdates();
   btn.disabled    = false;
@@ -663,7 +672,11 @@ async function checkForUpdates() {
 
   if (isNewer) {
     status.className   = 'update-status new';
-    status.textContent = `Update available: v${result.latest} — visit GitHub to download.`;
+    status.textContent = `v${result.latest} is available (you have v${result.current}).`;
+    if (result.downloadUrl) {
+      pendingUpdateUrl = result.downloadUrl;
+      actionDiv.style.display = 'block';
+    }
   } else if (isSame) {
     status.className   = 'update-status ok';
     status.textContent = `You're up to date (v${result.current}).`;
@@ -671,6 +684,43 @@ async function checkForUpdates() {
     status.className   = 'update-status ok';
     status.textContent = `You're running a pre-release build (v${result.current}).`;
   }
+}
+
+async function downloadAndInstallUpdate() {
+  if (!pendingUpdateUrl) return;
+
+  const confirmed = await window.electronAPI.showConfirm(
+    'Download & Install Update',
+    'Your inventory will be backed up automatically before the update installs.\n\nThe app will close and restart after installation.\n\nDownload and install now?'
+  );
+  if (!confirmed) return;
+
+  const btn    = document.getElementById('btnDownloadUpdate');
+  const status = document.getElementById('updateStatus');
+
+  btn.disabled = true;
+
+  // Listen for progress events from the main process
+  window.electronAPI.onDownloadProgress(({ phase, percent }) => {
+    status.className = 'update-status new';
+    if (phase === 'downloading') {
+      status.textContent = `Downloading… ${percent}%`;
+    } else if (phase === 'launching') {
+      status.textContent = 'Launching installer — the app will close now…';
+      btn.textContent = 'Installing…';
+    }
+  });
+
+  status.className   = 'update-status new';
+  status.textContent = 'Starting download…';
+
+  const result = await window.electronAPI.downloadAndInstall(pendingUpdateUrl);
+  if (!result.ok) {
+    btn.disabled    = false;
+    status.className   = 'update-status error';
+    status.textContent = `Download failed: ${result.error}`;
+  }
+  // On success the app quits, so nothing else to do
 }
 
 // =========================================================

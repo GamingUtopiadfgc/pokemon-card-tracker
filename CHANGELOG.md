@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.9] - 2026-06-07
+
+### Added
+- **Auto-update installer** — when Check for Updates finds a newer version, a "⬇ Download & Install" button appears; clicking it shows a native confirm dialog, creates an automatic pre-update backup of your inventory, downloads the installer in the background with live progress (e.g. "Downloading… 64%"), then launches the installer and quits the app cleanly so the installer can replace all files
+
+---
+
 ## [1.0.8] - 2026-06-07
 
 ### Changed

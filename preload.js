@@ -15,7 +15,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
   backupOpenFolder:()            => ipcRenderer.invoke('backup-open-folder'),
 
   // Settings
-  getAppVersion:   ()            => ipcRenderer.invoke('get-app-version'),
-  checkForUpdates: ()            => ipcRenderer.invoke('check-for-updates'),
-  openDataFolder:  ()            => ipcRenderer.invoke('open-data-folder')
+  getAppVersion:       ()        => ipcRenderer.invoke('get-app-version'),
+  checkForUpdates:     ()        => ipcRenderer.invoke('check-for-updates'),
+  openDataFolder:      ()        => ipcRenderer.invoke('open-data-folder'),
+  downloadAndInstall:  (url)     => ipcRenderer.invoke('download-and-install', url),
+  onDownloadProgress:  (cb)      => ipcRenderer.on('download-progress', (_e, data) => cb(data))
 });

@@ -218,20 +218,21 @@ ipcMain.handle('open-data-folder', () => {
 ipcMain.handle('check-for-updates', () => {
   return new Promise(resolve => {
     const https = require('https');
-    const options = {
+    const req = https.get({
       hostname: 'api.github.com',
       path: '/repos/GamingUtopiadfgc/pokemon-card-tracker/releases/latest',
       headers: { 'User-Agent': 'poke-card-inventory-tracker' }
-    };
-    const req = https.get(options, res => {
+    }, res => {
       let body = '';
       res.on('data', chunk => { body += chunk; });
       res.on('end', () => {
         try {
-          const data   = JSON.parse(body);
-          const latest  = (data.tag_name || '').replace(/^v/i, '');
-          const current = app.getVersion();
-          resolve({ ok: true, current, latest, url: data.html_url || '' });
+          const data        = JSON.parse(body);
+          const latest      = (data.tag_name || '').replace(/^v/i, '');
+          const current     = app.getVersion();
+          const asset       = (data.assets || []).find(a => a.name.endsWith('.exe'));
+          const downloadUrl = asset ? asset.browser_download_url : '';
+          resolve({ ok: true, current, latest, url: data.html_url || '', downloadUrl });
         } catch {
           resolve({ ok: false, error: 'Could not parse GitHub response.' });
         }
@@ -240,5 +241,81 @@ ipcMain.handle('check-for-updates', () => {
     req.on('error', e => resolve({ ok: false, error: e.message }));
     req.setTimeout(8000, () => { req.destroy(); resolve({ ok: false, error: 'Request timed out.' }); });
   });
+});
+
+// Download a URL to dest, following redirects, calling onProgress(0-100) as bytes arrive
+function downloadFile(url, dest, onProgress) {
+  return new Promise((resolve, reject) => {
+    const https = require('https');
+    const http  = require('http');
+
+    const attempt = (currentUrl) => {
+      const client = currentUrl.startsWith('https') ? https : http;
+      const file   = fs.createWriteStream(dest);
+
+      client.get(currentUrl, { headers: { 'User-Agent': 'poke-card-inventory-tracker' } }, res => {
+        if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
+          res.resume();
+          file.close(() => attempt(res.headers.location));
+          return;
+        }
+        if (res.statusCode !== 200) {
+          res.resume();
+          file.close(() => fs.unlink(dest, () => {}));
+          reject(new Error(`HTTP ${res.statusCode}`));
+          return;
+        }
+
+        const total = parseInt(res.headers['content-length'] || '0', 10);
+        let received = 0;
+
+        res.on('data', chunk => {
+          received += chunk.length;
+          if (total && onProgress) onProgress(Math.round((received / total) * 100));
+        });
+
+        res.pipe(file);
+        file.on('finish', () => file.close(() => resolve(dest)));
+        file.on('error', e => { fs.unlink(dest, () => {}); reject(e); });
+      }).on('error', e => { fs.unlink(dest, () => {}); reject(e); });
+    };
+
+    attempt(url);
+  });
+}
+
+ipcMain.handle('download-and-install', async (_event, downloadUrl) => {
+  // 1. Backup before touching anything
+  try {
+    if (fs.existsSync(inventoryPath)) createBackupFile('pre-update');
+  } catch (e) {
+    console.error('[Pre-update backup]', e);
+  }
+
+  // 2. Download installer to temp folder
+  const os      = require('os');
+  const tmpFile = path.join(os.tmpdir(), 'PokemonCardTrackerUpdate.exe');
+
+  try {
+    mainWindow.webContents.send('download-progress', { phase: 'downloading', percent: 0 });
+
+    await downloadFile(downloadUrl, tmpFile, percent => {
+      mainWindow.webContents.send('download-progress', { phase: 'downloading', percent });
+    });
+
+    mainWindow.webContents.send('download-progress', { phase: 'launching' });
+  } catch (e) {
+    return { ok: false, error: e.message };
+  }
+
+  // 3. Launch installer detached, then quit so file locks are released
+  try {
+    const { spawn } = require('child_process');
+    spawn(tmpFile, [], { detached: true, stdio: 'ignore' }).unref();
+    setTimeout(() => app.quit(), 1200);
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: `Could not launch installer: ${e.message}` };
+  }
 });
 
